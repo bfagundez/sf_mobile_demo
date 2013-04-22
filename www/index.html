@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <meta name="format-detection" content="telephone=no" />
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <link rel="stylesheet" type="text/css" href="css/jquery.mobile-1.3.1.min.css" />
+        <script type="text/javascript" src="js/jquery.js"></script>
+        <script type="text/javascript" src="js/underscore.min.js"></script>
+        <script type="text/javascript" src="js/backbone.min.js"></script>
+        <script type="text/javascript" src="js/cordova-2.6.0.js"></script>
+        <script type="text/javascript" src="js/jquery.mobile-1.3.1.min.js"></script>
+        <script>
+            
+            var SFDemoApp = {}
+			SFDemoApp.DataCollection = Backbone.Collection.extend({});
+            SFDemoApp.ListItemView = Backbone.View.extend({
+            	tagName: 'li',
+                attributes: {'class':'ui-li ui-li-static ui-btn-up-a ui-last-child'},
+                initialize:function(){
+                	this.template = "<h3 class='ui-li-heading'><%= rec.get('Name') %></h3><p class='ui-li-desc'><strong>Phone: <%= rec.get('Phone') %></strong></p>";
+                },
+                render: function(){
+                	var $el = $(this.el);
+
+                    $el.html(_.template(this.template,{ 'rec' :this.model } ));
+
+                	return this;
+                }
+            });
+            SFDemoApp.ListView = Backbone.View.extend({
+            	initialize: function(){
+                	this.el = this.options.el;
+                    console.log(this.el);
+                    console.log(this.$el);
+                },
+				render: function(){
+					
+                    var $el = $(this.el)
+                    , self = this;
+					console.log(this.collection);
+                    this.collection.each(function(list) {
+                       var item, sidebarItem;
+                       item = new SFDemoApp.ListItemView({ model: list });
+                       $el.append(item.render().el);
+                    });
+                  
+                  return this;
+
+                }
+            });
+            
+            document.addEventListener("deviceready", onDeviceReady, false);
+            
+            function onDeviceReady() {
+                // Now safe to use the Cordova API
+                console.log("Cordova is ready!");
+                
+                $(".call").click(function(){
+                    console.log("Calling the service..");
+                    //display loader
+                    $.mobile.loading( 'show', { text: 'Contacting SF...', textVisible: true, theme: 'a'});
+                    // Call the remote service
+                    $.ajax({url:'http://phoneinteraction.herokuapp.com/record_list',dataType:'json'}).done(function(res){
+                            console.log("json loaded",res.record_list);
+                            $.mobile.changePage("#two");
+                            $.mobile.loading( 'hide');
+                            var list = new SFDemoApp.ListView({collection:new SFDemoApp.DataCollection(res.record_list),el:$("#record_list")});
+                            console.log(list);
+                            list.render();
+                        });
+                    });
+            }
+            
+        </script>
+            
+        <title>SF Rest Demo</title>
+    </head>
+    <body >
+        <!-- Start of first page: #one -->
+        <div data-role="page" id="one"  data-theme="b" id="containerPage">
+            
+            <div data-role="header">
+                <h1>SF Mobile demo</h1>
+            </div><!-- /header -->
+            
+            <div data-role="content" >
+                <h3>Fetch data from SF!</h3>
+                <p><a href="#" data-role="button" class="call">Call service</a></p>
+               
+            </div><!-- /content -->
+            
+        </div><!-- /page one -->
+        
+        
+        <!-- Start of second page: #two -->
+        <div data-role="page" id="two" data-theme="b">
+            
+            <div data-role="header">
+                <h1>List of records</h1>
+            </div><!-- /header -->
+            
+            <div data-role="content" data-theme="a">
+                <ul data-role="listview" data-theme="a" data-divider-theme="a" id="record_list">
+                </ul>
+				
+                <br />
+                <p><a href="#one" data-direction="reverse" data-role="button" data-theme="b">Back</a></p>
+                
+            </div><!-- /content -->
+            
+        </div><!-- /page two -->
+        
+        
+        
+    </body>
+</html>
