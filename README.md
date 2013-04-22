@@ -1,4 +1,4 @@
-sf_mobile_demo
+SF Mobile demo
 ==============
 
-iOS Phonegap application to demo, interacting with Salesforce
+iOS Phonegap application to interact with Salesforce
